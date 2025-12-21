@@ -640,442 +640,6 @@
             <div class="relative mb-4">
                 <input type="text" id="periodInput" placeholder="Masukkan Periode (contoh: 20251201100010919)" class="w-full px-4 py-2 bg-white border border-gray-300 rounded-lg text-gray-800 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500" />
             </div>
-            <button id="generateBtn" type="button" class="w-full bg-gradient-to-r from-green-500 to-blue-500 h        }
-
-        .number-display {
-            font-size: 48pt;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.7), -2px -2px 4px rgba(255,255,255,0.3);
-        }
-
-        .number-display.even {
-            color: #dc2626;
-        }
-
-        .number-display.odd {
-            color: #059669;
-        }
-
-        .even-number {
-            color: #dc2626;
-        }
-
-        .odd-number {
-            color: #059669;
-        }
-
-        .countdown-timer {
-            font-size: 18pt;
-            font-weight: bold;
-            color: #111827;
-            text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
-            position: relative;
-            z-index: 2;
-        }
-
-        .history-item {
-            font-size: 14px;
-            color: #374151;
-            padding: 2px 0;
-            border-bottom: 1px solid rgba(209, 213, 219, 0.3);
-            font-family: 'Roboto Mono', monospace;
-            white-space: nowrap;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-        }
-
-        .history-item:last-child {
-            border-bottom: none;
-        }
-
-        .history-left {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            flex: 1;
-        }
-
-        .history-right {
-            display: flex;
-            align-items: center;
-            gap: 4px;
-            min-width: 120px;
-            justify-content: flex-end;
-        }
-
-        .symbol-container {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            min-width: 50px;
-            text-align: center;
-        }
-
-        .dark-text {
-            color: #111827 !important;
-        }
-
-        .light-dark-text {
-            color: #374151 !important;
-        }
-
-        .overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.7);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 1000;
-            opacity: 0;
-            visibility: hidden;
-            transition: opacity 0.3s ease, visibility 0.3s ease;
-        }
-
-        .overlay.active {
-            opacity: 1;
-            visibility: visible;
-        }
-
-        .modal {
-            background: white;
-            padding: 2rem;
-            border-radius: 1rem;
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
-            max-width: 400px;
-            width: 90%;
-            transform: scale(0.8);
-            transition: transform 0.3s ease;
-        }
-
-        .overlay.active .modal {
-            transform: scale(1);
-        }
-
-        @keyframes displayUpdate {
-            0% { transform: scale(1); filter: drop-shadow(0 0 0 rgba(0,0,0,0)); }
-            50% { transform: scale(1.15); filter: drop-shadow(0 0 20px rgba(59, 130, 246, 0.8)); }
-            100% { transform: scale(1); filter: drop-shadow(0 0 0 rgba(0,0,0,0)); }
-        }
-
-        .animate-update {
-            animation: displayUpdate 0.6s ease-out;
-        }
-
-        .drbg-indicator {
-            position: absolute;
-            top: -10px;
-            right: 10px;
-            background: rgba(0, 0, 0, 0.7);
-            color: white;
-            padding: 2px 8px;
-            border-radius: 12px;
-            font-size: 10px;
-            opacity: 0;
-            transition: opacity 0.3s ease;
-        }
-
-        .result-container:hover .drbg-indicator {
-            opacity: 1;
-        }
-
-        .reseed-indicator {
-            position: absolute;
-            top: -35px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: linear-gradient(90deg, #10b981, #059669);
-            color: white;
-            padding: 4px 12px;
-            border-radius: 20px;
-            font-size: 11px;
-            font-weight: bold;
-            opacity: 0;
-            transition: opacity 0.5s ease, top 0.5s ease;
-            z-index: 10;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-        }
-
-        .reseed-indicator.show {
-            opacity: 1;
-            top: -40px;
-        }
-
-        .supervisor-indicator {
-            position: absolute;
-            top: -60px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: linear-gradient(90deg, #8b5cf6, #6366f1);
-            color: white;
-            padding: 4px 12px;
-            border-radius: 20px;
-            font-size: 11px;
-            font-weight: bold;
-            opacity: 0;
-            transition: opacity 0.5s ease, top 0.5s ease;
-            z-index: 10;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-        }
-
-        .supervisor-indicator.show {
-            opacity: 1;
-            top: -65px;
-        }
-
-        .hybrid-indicator {
-            position: absolute;
-            top: -85px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: linear-gradient(90deg, #f59e0b, #ef4444);
-            color: white;
-            padding: 4px 12px;
-            border-radius: 20px;
-            font-size: 11px;
-            font-weight: bold;
-            opacity: 0;
-            transition: opacity 0.5s ease, top 0.5s ease;
-            z-index: 10;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-        }
-
-        .hybrid-indicator.show {
-            opacity: 1;
-            top: -90px;
-        }
-
-        @keyframes telegramPulse {
-            0% { opacity: 0.7; transform: scale(1); }
-            50% { opacity: 1; transform: scale(1.05); color: #0088cc; }
-            100% { opacity: 0.7; transform: scale(1); }
-        }
-
-        .telegram-text {
-            animation: telegramPulse 3s ease-in-out infinite;
-            transition: color 0.3s ease;
-            cursor: pointer;
-        }
-
-        .telegram-text:hover {
-            color: #0088cc;
-            animation-play-state: paused;
-        }
-
-        @keyframes periodUpdate {
-            0% { opacity: 0.3; transform: translateX(-10px); }
-            50% { opacity: 1; transform: translateX(5px); }
-            100% { opacity: 1; transform: translateX(0); }
-        }
-
-        .period-animate {
-            animation: periodUpdate 0.8s ease-out;
-        }
-
-        @keyframes countdownPulse {
-            0% { transform: scale(1); opacity: 1; }
-            50% { transform: scale(1.05); opacity: 0.8; }
-            100% { transform: scale(1); opacity: 1; }
-        }
-
-        @keyframes countdownWarning {
-            0%, 100% { transform: scale(1) rotate(0deg); }
-            25% { transform: scale(1.1) rotate(-2deg); }
-            75% { transform: scale(1.1) rotate(2deg); }
-        }
-
-        @keyframes criticalWarning {
-            0%, 100% { transform: scale(1); filter: brightness(1); }
-            50% { transform: scale(1.15); filter: brightness(1.5); }
-        }
-
-        .countdown-normal { animation: countdownPulse 1s ease-in-out infinite; color: #111827; }
-        .countdown-warning { animation: countdownWarning 0.5s ease-in-out infinite; color: #f59e0b; text-shadow: 0 0 10px rgba(245, 158, 11, 0.5); }
-        .countdown-critical { animation: criticalWarning 0.3s ease-in-out infinite; color: #dc2626; text-shadow: 0 0 15px rgba(220, 38, 38, 0.8); }
-
-        .countdown-container {
-            position: relative;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            width: 100%;
-            height: 70px;
-        }
-
-        .progress-ring {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            width: 60px;
-            height: 60px;
-            border-radius: 50%;
-            border: 3px solid rgba(0, 0, 0, 0.1);
-            z-index: 1;
-        }
-
-        .progress-ring-fill {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%) rotate(-90deg);
-            width: 60px;
-            height: 60px;
-            border-radius: 50%;
-            border: 3px solid transparent;
-            border-top-color: #3b82f6;
-            transition: border-top-color 0.3s ease, transform 0.3s ease;
-            z-index: 1;
-        }
-
-        .progress-ring-fill.warning { border-top-color: #f59e0b; }
-        .progress-ring-fill.critical { border-top-color: #dc2626; animation: spin 1s linear infinite; }
-
-        @keyframes spin {
-            0% { transform: translate(-50%, -50%) rotate(-90deg); }
-            100% { transform: translate(-50%, -50%) rotate(270deg); }
-        }
-
-        .particle {
-            position: absolute;
-            width: 4px;
-            height: 4px;
-            background: #f59e0b;
-            border-radius: 50%;
-            pointer-events: none;
-            z-index: 3;
-        }
-
-        @keyframes particleAnimation {
-            0% { transform: translate(0, 0) scale(1); opacity: 1; }
-            100% { transform: translate(var(--x), var(--y)) scale(0); opacity: 0; }
-        }
-
-        .size-badge {
-            display: inline-block;
-            padding: 2px 8px;
-            border-radius: 12px;
-            font-size: 12px;
-            font-weight: bold;
-            margin-left: 8px;
-        }
-
-        .size-kecil-merah { background-color: #dc2626; color: white; }
-        .size-kecil-hijau { background-color: #10b981; color: white; }
-        .size-besar-hijau { background-color: #10b981; color: white; }
-        .size-besar-merah { background-color: #dc2626; color: white; }
-
-        .history-number { font-weight: bold; font-size: 16px; }
-        .history-even-number { color: #dc2626; }
-        .history-odd-number { color: #059669; }
-
-        .period-change-indicator {
-            position: absolute;
-            top: -25px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: #10b981;
-            color: white;
-            padding: 2px 8px;
-            border-radius: 12px;
-            font-size: 11px;
-            font-weight: bold;
-            opacity: 0;
-            transition: opacity 0.3s ease, top 0.3s ease;
-            z-index: 10;
-        }
-
-        .period-change-indicator.show { opacity: 1; top: -30px; }
-
-        .history-separator {
-            display: inline-block;
-            width: 1px;
-            height: 16px;
-            background-color: rgba(209, 213, 219, 0.5);
-            margin: 0 4px;
-            vertical-align: middle;
-        }
-
-        .drbg-status {
-            font-size: 10px;
-            color: #6b7280;
-            font-style: italic;
-            max-width: 100px;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-        }
-
-        .seed-animation { animation: seedPulse 0.6s ease-out; }
-
-        @keyframes seedPulse {
-            0% { transform: scale(1); box-shadow: 0 0 0 rgba(139, 92, 246, 0); }
-            50% { transform: scale(1.05); box-shadow: 0 0 20px rgba(139, 92, 246, 0.6); }
-            100% { transform: scale(1); box-shadow: 0 0 0 rgba(139, 92, 246, 0); }
-        }
-
-        .rng-method-indicator {
-            font-size: 9px;
-            color: #6b7280;
-            font-style: italic;
-            max-width: 100px;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-        }
-    </style>
-</head>
-<body class="min-h-screen flex items-center justify-center p-4">
-    <!-- Overlay untuk Reset -->
-    <div id="resetOverlay" class="overlay">
-        <div class="modal">
-            <div class="text-center mb-4">
-                <i class="fas fa-exclamation-triangle text-5xl text-yellow-500 mb-3"></i>
-                <h3 class="text-xl font-bold dark-text mb-2">Konfirmasi Reset</h3>
-                <p class="text-gray-600">Apakah Anda yakin ingin mereset semua data?</p>
-            </div>
-            <div class="flex gap-3 justify-center">
-                <button id="confirmReset" class="bg-red-500 hover:bg-red-600 text-white font-semibold py-2 px-6 rounded-lg transition duration-300 transform hover:scale-105">
-                    <i class="fas fa-check mr-2"></i>Ya, Reset
-                </button>
-                <button id="cancelReset" class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-semibold py-2 px-6 rounded-lg transition duration-300 transform hover:scale-105">
-                    <i class="fas fa-times mr-2"></i>Batal
-                </button>
-            </div>
-        </div>
-    </div>
-
-    <div class="bg-white/95 backdrop-blur-sm p-8 rounded-2xl shadow-2xl max-w-md w-full mx-auto">
-        <!-- Header -->
-        <div class="text-center mb-4">
-            <h1 class="text-6xl font-bold mb-2">
-                <span class="text-red-500 dark-text">55</span>
-                <span class="five-gradient">FIVE</span>
-            </h1>
-            <div class="text-sm light-dark-text telegram-text" id="telegramText">
-                <i class="fab fa-telegram mr-1"></i>Telegram : @FaruqNineten
-            </div>
-        </div>
-
-        <!-- Periode Only dengan Badge pada Angka -->
-        <div class="text-center mb-1 relative">
-            <div class="period-change-indicator" id="periodChangeIndicator">Periode +1</div>
-            <div class="reseed-indicator" id="reseedIndicator">DRBG Reseeded</div>
-            <div class="supervisor-indicator" id="supervisorIndicator">Supervisor: New Seed Generated</div>
-            <div class="hybrid-indicator" id="hybridIndicator">Hybrid RNG: DRBG + Periode + Multi-RNG</div>
-            <div class="flex justify-center">
-                <span id="currentPeriod" class="inline-flex items-center px-3 py-1 rounded-full text-lg font-mono font-medium bg-blue-100 text-blue-800">-</span>
-            </div>
-        </div>
-
-        <!-- Input Section -->
-        <div id="inputSection" class="mb-6">
-            <div class="relative mb-4">
-                <input type="text" id="periodInput" placeholder="Masukkan Periode (contoh: 20251201100010919)" class="w-full px-4 py-2 bg-white border border-gray-300 rounded-lg text-gray-800 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500" />
-            </div>
             <button id="generateBtn" type="button" class="w-full bg-gradient-to-r from-green-500 to-blue-500 hover:from-green-600 hover:to-blue-600 text-white font-semibold py-2 px-4 rounded-lg transition-all duration-300 transform hover:scale-105 active:scale-95 shadow-lg hover:shadow-xl">
                 <i class="fas fa-sync-alt text-2xl"></i>
             </button>
@@ -1123,7 +687,69 @@
     </div>
 
     <script>
-        // AES-CTR-DRBG Implementation
+        // Show login form
+        function showLogin() {
+            document.getElementById('loginForm').classList.remove('hidden');
+            document.getElementById('registerForm').classList.add('hidden');
+            document.getElementById('mainPage').classList.add('hidden');
+        }
+
+        // Show register form
+        function showRegister() {
+            document.getElementById('registerForm').classList.remove('hidden');
+            document.getElementById('loginForm').classList.add('hidden');
+            document.getElementById('mainPage').classList.add('hidden');
+        }
+
+        // Show main page
+        function showMainPage() {
+            document.getElementById('mainPage').classList.remove('hidden');
+            document.getElementById('loginForm').classList.add('hidden');
+            document.getElementById('registerForm').classList.add('hidden');
+        }
+
+        // Handle login form submission
+        document.getElementById('loginFormElement').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const form = e.target;
+            const formData = new FormData(form);
+            const id55 = formData.get('id55');
+            const password = formData.get('password');
+
+            // Check if credentials match the specified ones
+            if (id55 === '17081945' && password === 'Barcelona1') {
+                showMainPage();
+            } else {
+                alert('ID atau password salah. Silakan coba lagi.');
+            }
+});
+
+        // Handle register form submission
+        document.getElementById('registerFormElement').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const form = e.target;
+            const formData = new FormData(form);
+
+            try {
+                const res = await fetch("https://55fivekey.github.io/55Fivecyber/", {
+                    method: "POST",
+                    body: formData
+                });
+
+                const text = await res.text();
+                alert(text);
+                
+                // After successful registration, switch to login form
+                setTimeout(() => {
+                    showLogin();
+                }, 2000);
+            } catch (error) {
+                alert('Terjadi kesalahan saat mendaftar. Silakan coba lagi.');
+                console.error('Registration error:', error);
+            }
+        });
+
+        // Main page functionality (55FIVE Hybrid RNG System)
         class AESCTRDRBG {
             constructor(entropyInput) {
                 if (!(entropyInput instanceof Uint8Array)) throw new Error('Entropy input harus Uint8Array');
@@ -1196,13 +822,13 @@
             function(seed) { let hash = seed; return () => { hash = ((hash >> 16) ^ hash) * 0x45d9f3b; hash = ((hash >> 16) ^ hash) * 0x45d9f3b; hash = (hash >> 16) ^ hash; return (hash & 0xffffffff) / 0xffffffff; }; }
         ];
 
-        // State variables
+        // State variables for main page
         let currentPeriod = "", currentNumber = 0, lastNumber = -1, countdownInterval = null, basePeriod = "", periodCounter = 0;
         let currentPeriodForHistory = "", currentNumberForHistory = 0, drbgInstance = null, drbgReseedCounter = 0, periodSeedCounter = 0;
         let currentRNGMethods = [], lastFiveDigits = 0;
         const history = [];
         
-        // DOM elements
+        // DOM elements for main page
         const dom = {
             inputSection: document.getElementById('inputSection'), resultSection: document.getElementById('resultSection'), historySection: document.getElementById('historySection'),
             periodInput: document.getElementById('periodInput'), generateBtn: document.getElementById('generateBtn'), resetBtn: document.getElementById('resetBtn'),
@@ -1213,7 +839,7 @@
             periodChangeIndicator: document.getElementById('periodChangeIndicator'), reseedIndicator: document.getElementById('reseedIndicator'), supervisorIndicator: document.getElementById('supervisorIndicator'), hybridIndicator: document.getElementById('hybridIndicator')
         };
 
-        // Initialize DRBG
+        // Initialize DRBG for main page
         async function initializeDRBG() {
             try { const entropy = crypto.getRandomValues(new Uint8Array(16)); drbgInstance = new AESCTRDRBG(entropy); drbgReseedCounter = 0; periodSeedCounter = 0; console.log('AES-CTR-DRBG initialized'); return true; }
             catch (error) { console.error('Failed to initialize DRBG:', error); return false; }
@@ -1261,7 +887,7 @@
                 // 3. Sebagai langkah pengaman, pastikan hasilnya selalu dalam rentang 0-9
                 result = Math.max(0, Math.min(result, 9));
                 
-                // --- DEBUG: Tampilkan proses di console (bisa dihapus nanti) ---
+// --- DEBUG: Tampilkan proses di console (bisa dihapus nanti) ---
                 console.log(`Hybrid RNG Debug: Method1=${currentRNGMethods[0]}, Method2=${currentRNGMethods[1]}, Value1=${value1.toFixed(4)}, Value2=${value2.toFixed(4)}, Avg=${combinedValue.toFixed(4)}, FinalDigit=${result}`);
                 
                 dom.hybridIndicator.textContent = `Hybrid RNG: Methods ${currentRNGMethods[0]} & ${currentRNGMethods[1]}`; dom.hybridIndicator.classList.add('show');
@@ -1342,7 +968,7 @@
             const start = period.substring(0, startLength);
             const end = period.substring(period.length - endLength);
             
-             return start + end;
+            return start + end;
         }
 
         // Add to history
@@ -1415,7 +1041,7 @@
         function cancelReset() { dom.resetOverlay.classList.remove('active'); }
         function handleTelegramClick() { window.open('https://t.me/FaruqNineten', '_blank'); }
 
-        // Event listeners
+        // Event listeners for main page
         dom.generateBtn.addEventListener('click', handleGenerate);
         dom.resetBtn.addEventListener('click', handleReset);
         dom.confirmResetBtn.addEventListener('click', confirmReset);
@@ -1427,6 +1053,7 @@
             else if (e.key === 'r' && !dom.resultSection.classList.contains('hidden')) { handleReset(); }
         });
 
+        // Initialize with login form visible
         document.addEventListener('DOMContentLoaded', () => {
             console.log('55FIVE - Website siap digunakan dengan Hybrid RNG System (34 Methods)');
         });
