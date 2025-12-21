@@ -1,0 +1,829 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>55FIVE - Hybrid RNG System (34 Methods)</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700&family=Roboto+Mono:wght@400;700&display=swap');
+
+        body {
+            font-family: 'Noto Sans SC', sans-serif;
+            background: linear-gradient(135deg, #dc2626 0%, #9333ea 50%, #be185d 100%);
+            background-size: 400% 400%;
+            animation: gradientShift 8s ease infinite;
+        }
+
+        .five-gradient {
+            background: linear-gradient(90deg, #dc2626 0%, #fbbf24 25%, #9333ea 75%, #dc2626 100%);
+            background-size: 200% 100%;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: gradientMove 3s ease-in-out infinite alternate;
+        }
+
+        @keyframes gradientMove {
+            0% { background-position: 0% 50%; }
+            100% { background-position: 100% 50%; }
+        }
+
+        @keyframes gradientShift {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        .number-display {
+            font-size: 48pt;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.7), -2px -2px 4px rgba(255,255,255,0.3);
+        }
+
+        .number-display.even {
+            color: #dc2626;
+        }
+
+        .number-display.odd {
+            color: #059669;
+        }
+
+        .even-number {
+            color: #dc2626;
+        }
+
+        .odd-number {
+            color: #059669;
+        }
+
+        .countdown-timer {
+            font-size: 18pt;
+            font-weight: bold;
+            color: #111827;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+            position: relative;
+            z-index: 2;
+        }
+
+        .history-item {
+            font-size: 14px;
+            color: #374151;
+            padding: 2px 0;
+            border-bottom: 1px solid rgba(209, 213, 219, 0.3);
+            font-family: 'Roboto Mono', monospace;
+            white-space: nowrap;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .history-item:last-child {
+            border-bottom: none;
+        }
+
+        .history-left {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex: 1;
+        }
+
+        .history-right {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            min-width: 120px;
+            justify-content: flex-end;
+        }
+
+        .symbol-container {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 50px;
+            text-align: center;
+        }
+
+        .dark-text {
+            color: #111827 !important;
+        }
+
+        .light-dark-text {
+            color: #374151 !important;
+        }
+
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+        }
+
+        .overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .modal {
+            background: white;
+            padding: 2rem;
+            border-radius: 1rem;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+            max-width: 400px;
+            width: 90%;
+            transform: scale(0.8);
+            transition: transform 0.3s ease;
+        }
+
+        .overlay.active .modal {
+            transform: scale(1);
+        }
+
+        @keyframes displayUpdate {
+            0% { transform: scale(1); filter: drop-shadow(0 0 0 rgba(0,0,0,0)); }
+            50% { transform: scale(1.15); filter: drop-shadow(0 0 20px rgba(59, 130, 246, 0.8)); }
+            100% { transform: scale(1); filter: drop-shadow(0 0 0 rgba(0,0,0,0)); }
+        }
+
+        .animate-update {
+            animation: displayUpdate 0.6s ease-out;
+        }
+
+        .drbg-indicator {
+            position: absolute;
+            top: -10px;
+            right: 10px;
+            background: rgba(0, 0, 0, 0.7);
+            color: white;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 10px;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .result-container:hover .drbg-indicator {
+            opacity: 1;
+        }
+
+        .reseed-indicator {
+            position: absolute;
+            top: -35px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: linear-gradient(90deg, #10b981, #059669);
+            color: white;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: bold;
+            opacity: 0;
+            transition: opacity 0.5s ease, top 0.5s ease;
+            z-index: 10;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .reseed-indicator.show {
+            opacity: 1;
+            top: -40px;
+        }
+
+        .supervisor-indicator {
+            position: absolute;
+            top: -60px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: linear-gradient(90deg, #8b5cf6, #6366f1);
+            color: white;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: bold;
+            opacity: 0;
+            transition: opacity 0.5s ease, top 0.5s ease;
+            z-index: 10;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .supervisor-indicator.show {
+            opacity: 1;
+            top: -65px;
+        }
+
+        .hybrid-indicator {
+            position: absolute;
+            top: -85px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: linear-gradient(90deg, #f59e0b, #ef4444);
+            color: white;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: bold;
+            opacity: 0;
+            transition: opacity 0.5s ease, top 0.5s ease;
+            z-index: 10;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .hybrid-indicator.show {
+            opacity: 1;
+            top: -90px;
+        }
+
+        @keyframes telegramPulse {
+            0% { opacity: 0.7; transform: scale(1); }
+            50% { opacity: 1; transform: scale(1.05); color: #0088cc; }
+            100% { opacity: 0.7; transform: scale(1); }
+        }
+
+        .telegram-text {
+            animation: telegramPulse 3s ease-in-out infinite;
+            transition: color 0.3s ease;
+            cursor: pointer;
+        }
+
+        .telegram-text:hover {
+            color: #0088cc;
+            animation-play-state: paused;
+        }
+
+        @keyframes periodUpdate {
+            0% { opacity: 0.3; transform: translateX(-10px); }
+            50% { opacity: 1; transform: translateX(5px); }
+            100% { opacity: 1; transform: translateX(0); }
+        }
+
+        .period-animate {
+            animation: periodUpdate 0.8s ease-out;
+        }
+
+        @keyframes countdownPulse {
+            0% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.05); opacity: 0.8; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        @keyframes countdownWarning {
+            0%, 100% { transform: scale(1) rotate(0deg); }
+            25% { transform: scale(1.1) rotate(-2deg); }
+            75% { transform: scale(1.1) rotate(2deg); }
+        }
+
+        @keyframes criticalWarning {
+            0%, 100% { transform: scale(1); filter: brightness(1); }
+            50% { transform: scale(1.15); filter: brightness(1.5); }
+        }
+
+        .countdown-normal { animation: countdownPulse 1s ease-in-out infinite; color: #111827; }
+        .countdown-warning { animation: countdownWarning 0.5s ease-in-out infinite; color: #f59e0b; text-shadow: 0 0 10px rgba(245, 158, 11, 0.5); }
+        .countdown-critical { animation: criticalWarning 0.3s ease-in-out infinite; color: #dc2626; text-shadow: 0 0 15px rgba(220, 38, 38, 0.8); }
+
+        .countdown-container {
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 100%;
+            height: 70px;
+        }
+
+        .progress-ring {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            border: 3px solid rgba(0, 0, 0, 0.1);
+            z-index: 1;
+        }
+
+        .progress-ring-fill {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) rotate(-90deg);
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            border: 3px solid transparent;
+            border-top-color: #3b82f6;
+            transition: border-top-color 0.3s ease, transform 0.3s ease;
+            z-index: 1;
+        }
+
+        .progress-ring-fill.warning { border-top-color: #f59e0b; }
+        .progress-ring-fill.critical { border-top-color: #dc2626; animation: spin 1s linear infinite; }
+
+        @keyframes spin {
+            0% { transform: translate(-50%, -50%) rotate(-90deg); }
+            100% { transform: translate(-50%, -50%) rotate(270deg); }
+        }
+
+        .particle {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: #f59e0b;
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 3;
+        }
+
+        @keyframes particleAnimation {
+            0% { transform: translate(0, 0) scale(1); opacity: 1; }
+            100% { transform: translate(var(--x), var(--y)) scale(0); opacity: 0; }
+        }
+
+        .size-badge {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: bold;
+            margin-left: 8px;
+        }
+
+        .size-kecil-merah { background-color: #dc2626; color: white; }
+        .size-kecil-hijau { background-color: #10b981; color: white; }
+        .size-besar-hijau { background-color: #10b981; color: white; }
+        .size-besar-merah { background-color: #dc2626; color: white; }
+
+        .history-number { font-weight: bold; font-size: 16px; }
+        .history-even-number { color: #dc2626; }
+        .history-odd-number { color: #059669; }
+
+        .period-change-indicator {
+            position: absolute;
+            top: -25px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #10b981;
+            color: white;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: bold;
+            opacity: 0;
+            transition: opacity 0.3s ease, top 0.3s ease;
+            z-index: 10;
+        }
+
+        .period-change-indicator.show { opacity: 1; top: -30px; }
+
+        .history-separator {
+            display: inline-block;
+            width: 1px;
+            height: 16px;
+            background-color: rgba(209, 213, 219, 0.5);
+            margin: 0 4px;
+            vertical-align: middle;
+        }
+
+        .drbg-status {
+            font-size: 10px;
+            color: #6b7280;
+            font-style: italic;
+            max-width: 100px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .seed-animation { animation: seedPulse 0.6s ease-out; }
+
+        @keyframes seedPulse {
+            0% { transform: scale(1); box-shadow: 0 0 0 rgba(139, 92, 246, 0); }
+            50% { transform: scale(1.05); box-shadow: 0 0 20px rgba(139, 92, 246, 0.6); }
+            100% { transform: scale(1); box-shadow: 0 0 0 rgba(139, 92, 246, 0); }
+        }
+
+        .rng-method-indicator {
+            font-size: 9px;
+            color: #6b7280;
+            font-style: italic;
+            max-width: 100px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex items-center justify-center p-4">
+    <!-- Overlay untuk Reset -->
+    <div id="resetOverlay" class="overlay">
+        <div class="modal">
+            <div class="text-center mb-4">
+                <i class="fas fa-exclamation-triangle text-5xl text-yellow-500 mb-3"></i>
+                <h3 class="text-xl font-bold dark-text mb-2">Konfirmasi Reset</h3>
+                <p class="text-gray-600">Apakah Anda yakin ingin mereset semua data?</p>
+            </div>
+            <div class="flex gap-3 justify-center">
+                <button id="confirmReset" class="bg-red-500 hover:bg-red-600 text-white font-semibold py-2 px-6 rounded-lg transition duration-300 transform hover:scale-105">
+                    <i class="fas fa-check mr-2"></i>Ya, Reset
+                </button>
+                <button id="cancelReset" class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-semibold py-2 px-6 rounded-lg transition duration-300 transform hover:scale-105">
+                    <i class="fas fa-times mr-2"></i>Batal
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="bg-white/95 backdrop-blur-sm p-8 rounded-2xl shadow-2xl max-w-md w-full mx-auto">
+        <!-- Header -->
+        <div class="text-center mb-4">
+            <h1 class="text-6xl font-bold mb-2">
+                <span class="text-red-500 dark-text">55</span>
+                <span class="five-gradient">FIVE</span>
+            </h1>
+            <div class="text-sm light-dark-text telegram-text" id="telegramText">
+                <i class="fab fa-telegram mr-1"></i>Telegram : @FaruqNineten
+            </div>
+        </div>
+
+        <!-- Periode Only dengan Badge pada Angka -->
+        <div class="text-center mb-1 relative">
+            <div class="period-change-indicator" id="periodChangeIndicator">Periode +1</div>
+            <div class="reseed-indicator" id="reseedIndicator">DRBG Reseeded</div>
+            <div class="supervisor-indicator" id="supervisorIndicator">Supervisor: New Seed Generated</div>
+            <div class="hybrid-indicator" id="hybridIndicator">Hybrid RNG: DRBG + Periode + Multi-RNG</div>
+            <div class="flex justify-center">
+                <span id="currentPeriod" class="inline-flex items-center px-3 py-1 rounded-full text-lg font-mono font-medium bg-blue-100 text-blue-800">-</span>
+            </div>
+        </div>
+
+        <!-- Input Section -->
+        <div id="inputSection" class="mb-6">
+            <div class="relative mb-4">
+                <input type="text" id="periodInput" placeholder="Masukkan Periode (contoh: 20251201100010919)" class="w-full px-4 py-2 bg-white border border-gray-300 rounded-lg text-gray-800 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500" />
+            </div>
+            <button id="generateBtn" type="button" class="w-full bg-gradient-to-r from-green-500 to-blue-500 hover:from-green-600 hover:to-blue-600 text-white font-semibold py-2 px-4 rounded-lg transition-all duration-300 transform hover:scale-105 active:scale-95 shadow-lg hover:shadow-xl">
+                <i class="fas fa-sync-alt text-2xl"></i>
+            </button>
+        </div>
+
+        <!-- Result Section -->
+        <div id="resultSection" class="hidden mb-4">
+            <div class="bg-white/10 rounded-lg p-4 mb-2 result-container relative">
+                <div class="drbg-indicator" id="drbgIndicator">Hybrid RNG System (34 Methods)</div>
+                <div class="text-center">
+                    <div class="number-display mb-2" id="currentNumber">-</div>
+                    <div class="flex justify-center items-center gap-2">
+                        <span id="symbolDisplay" class="text-2xl"></span>
+                        <span id="sizeDisplay" class="size-badge"></span>
+                    </div>
+                </div>
+            </div>
+            <div class="bg-white/10 rounded-lg p-3 mb-3">
+                <div class="countdown-container">
+                    <div class="progress-ring" id="progressRing"></div>
+                    <div class="progress-ring-fill" id="progressRingFill"></div>
+                    <div class="countdown-timer mono-font countdown-normal" id="countdownTimer">00:60</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- History Section -->
+        <div id="historySection" class="hidden mb-6">
+            <div class="bg-white/10 rounded-lg p-4 max-h-48 overflow-y-auto">
+                <div class="flex justify-center items-center mb-3">
+                    <div class="bg-gradient-to-r from-purple-500 to-pink-500 text-white px-4 py-1 rounded-full text-sm font-bold shadow-md">
+                        <i class="fas fa-history mr-2"></i>History
+                    </div>
+                </div>
+                <div id="historyList" class="space-y-1"></div>
+            </div>
+        </div>
+
+        <!-- Reset Button - Initially hidden -->
+        <div class="text-center">
+            <button id="resetBtn" type="button" class="hidden bg-black hover:bg-gray-800 text-white font-medium py-1 px-4 rounded-lg transition duration-300">
+                <i class="fas fa-redo-alt"></i>
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // AES-CTR-DRBG Implementation
+        class AESCTRDRBG {
+            constructor(entropyInput) {
+                if (!(entropyInput instanceof Uint8Array)) throw new Error('Entropy input harus Uint8Array');
+                if (entropyInput.length !== 16) throw new Error('Entropy input harus 16 byte');
+                this.key = new Uint8Array(16); this.v = new Uint8Array(16); this.reseedCounter = 1; this._init(entropyInput);
+            }
+            async _init(entropyInput) { this.key.fill(0); this.v.fill(0); await this._update(entropyInput); }
+            async _encrypt(input) {
+                const cryptoKey = await crypto.subtle.importKey('raw', this.key, { name: 'AES-CTR' }, false, ['encrypt']);
+                return await crypto.subtle.encrypt({ name: 'AES-CTR', counter: this.v, length: 128 }, cryptoKey, input);
+            }
+            _incrementV() { for (let i = 15; i >= 0; i--) { this.v[i]++; if (this.v[i] !== 0) break; } }
+            async _update(providedData) {
+                const temp = new Uint8Array(32);
+                for (let i = 0; i < 2; i++) {
+                    this._incrementV();
+                    const encryptedBlock = new Uint8Array(await this._encrypt(new Uint8Array(16)));
+                    temp.set(encryptedBlock, i * 16);
+                }
+                if (providedData && providedData.length) { for (let i = 0; i < Math.min(providedData.length, 32); i++) temp[i] ^= providedData[i]; }
+                this.key = temp.slice(0, 16); this.v = temp.slice(16, 32);
+            }
+            async reseed(entropyInput) { if (!(entropyInput instanceof Uint8Array)) throw new Error('Entropy input harus Uint8Array'); await this._update(entropyInput); this.reseedCounter = 1; return true; }
+            async generate(numBytes) {
+                if (this.reseedCounter > 10000) throw new Error('Perlu reseed');
+                const output = new Uint8Array(numBytes); let generated = 0;
+                while (generated < numBytes) {
+                    this._incrementV();
+                    const block = new Uint8Array(await this._encrypt(new Uint8Array(16)));
+                    const remaining = numBytes - generated; output.set(block.slice(0, remaining < 16 ? remaining : 16), generated); generated += 16;
+                }
+                await this._update(); this.reseedCounter++; return output;
+            }
+        }
+
+        // 34 RNG Methods
+        const rngMethods = [
+            function(seed) { const a = 16807, m = 2147483647; return () => { seed = (a * seed) % m; return seed / m; }; },
+            function(seed) { let x = seed || 123456789; return () => { x ^= x << 13; x ^= x >> 17; x ^= x << 5; return (x >>> 0) / 2 ** 32; }; },
+            function(seed) { const weights = [8,15,9,12,15,8,11,9,6,7]; const total = weights.reduce((a, b) => a + b, 0); return () => { let r = (seed % total); for (let i = 0; i < weights.length; i++) { if (r < weights[i]) return i / 10; r -= weights[i]; } return 0; }; },
+            function(seed) { return () => { seed = (seed * seed).toString().padStart(16, '0'); seed = parseInt(seed.substring(4, 12)); return seed / 100000000; }; },
+            function(seed) { const p = 10007, q = 10009, M = p * q; let x = seed % M; return () => { x = (x * x) % M; return x / M; }; },
+            function(seed) { const N = 624, M = 397, MATRIX_A = 0x9908b0df, UPPER_MASK = 0x80000000, LOWER_MASK = 0x7fffffff; let mt = new Array(N), mti = N + 1; mt[0] = seed >>> 0; for (mti = 1; mti < N; mti++) { mt[mti] = (1812433253 * (mt[mti-1] ^ (mt[mti-1] >>> 30)) + mti); mt[mti] >>>= 0; } return () => { let y; if (mti >= N) { let kk; for (kk = 0; kk < N - M; kk++) { y = (mt[kk] & UPPER_MASK) | (mt[kk+1] & LOWER_MASK); mt[kk] = mt[kk+M] ^ (y >>> 1) ^ (y & 1 ? MATRIX_A : 0); } for (; kk < N - 1; kk++) { y = (mt[kk] & UPPER_MASK) | (mt[kk+1] & LOWER_MASK); mt[kk] = mt[kk+(M-N)] ^ (y >>> 1) ^ (y & 1 ? MATRIX_A : 0); } y = (mt[N-1] & UPPER_MASK) | (mt[0] & LOWER_MASK); mt[N-1] = mt[M-1] ^ (y >>> 1) ^ (y & 1 ? MATRIX_A : 0); mti = 0; } y = mt[mti++]; y ^= (y >>> 11); y ^= (y << 7) & 0x9d2c5680; y ^= (y << 15) & 0xefc60000; y ^= (y >>> 18); return y >>> 0 / 0xffffffff; }; },
+            function(seed) { let a = 1664525, c = 1013904223, x = seed, carry = Math.floor(seed / 1000000); return () => { let t = a * x + c; carry = Math.floor(t / 1000000); x = t % 1000000; return x / 1000000; }; },
+            function(seed) { const j = 24, k = 55, m = 2 ** 32; let state = new Array(k); state[0] = seed; for (let i = 1; i < k; i++) state[i] = (state[i-1] * 1103515245 + 12345) % m; let index = 0; return () => { const result = (state[index] + state[(index + k - j) % k]) % m; state[index] = result; index = (index + 1) % k; return result / m; }; },
+            function(seed) { const a = 1664525, c = 1013904223, m = 2 ** 32; let x = seed; return () => { if (x === 0) x = 1; x = (a * Math.pow(x, -1) + c) % m; return x / m; }; },
+            function(seed) { const state = new Array(16); state[0] = seed; for (let i = 1; i < 16; i++) state[i] = (state[i-1] * 1103515245 + 12345) >>> 0; let index = 0; return () => { const a = state[index], c = state[(index + 13) & 15], b = a ^ c; state[index] = b ^ (b << 16) ^ (b >>> 15) ^ state[(index + 9) & 15] ^ (state[(index + 9) & 15] >>> 4); index = (index + 1) & 15; return state[index] / 0xffffffff; }; },
+            function(seed) { const a = 1664525, c = 1013904223, m = 2**32; return () => { seed = (a * seed + c) % m; return seed / m; }; },
+            function(seed) { const a = 1140671485, c = 12820163, m = 2**24; return () => { seed = (a * seed + c) % m; return seed / m; }; },
+            function(seed) { let s0 = seed || 1001, s1 = seed ? seed * 2 : 2002; return () => { let s1_copy = s1; s0 ^= s0 << 23; s1 ^= s1 >>> 17; s0 ^= s0 >>> 26; s1_copy ^= s1_copy << 5; s0 ^= s1_copy; const result = (s0 + s1) >>> 0; s1 = s0; s0 = s1_copy; return result / 0xffffffff; }; },
+            function(seed) { let s0 = seed || 1001, s1 = seed ? seed * 3 : 3003; return () => { const result = (s0 + s1) >>> 0; s1 ^= s0; s0 = (s0 << 55 | s0 >>> 9) ^ s1 ^ (s1 << 14); s1 = (s1 << 36 | s1 >>> 28); return result / 0xffffffff; }; },
+            function(seed) { let s1 = (seed % 30268) + 1, s2 = ((seed / 30268) % 30306) + 1, s3 = ((seed / (30268 * 30306)) % 30322) + 1; return () => { s1 = (171 * s1) % 30269; s2 = (172 * s2) % 30307; s3 = (170 * s3) % 30323; return (s1 / 30269.0 + s2 / 30307.0 + s3 / 30323.0) % 1.0; }; },
+            function(seed) { const k = 10, m = 2**30; let state = new Array(k+1); state[0] = 0; for(let i=0; i<=k; i++) { seed = (1664525 * seed + 1013904223) >>> 0; state[i] = seed; } let n = 0; return () => { n++; state[n % (k+1)] = (state[n % (k+1)] + state[(n + 1) % (k+1)]) % m; return state[n % (k+1)] / m; }; },
+            function(seed) { const N = 156; let state = new Array(N); state[0] = seed; for (let i = 1; i < N; i++) state[i] = (1812433253 * (state[i-1] ^ (state[i-1] >>> 30)) + i) >>> 0; let index = 0; return () => { const result = state[index]; index = (index + 1) % N; return result / 0xffffffff; }; },
+            function(seed) { let state = seed || 0; const inc = 1442695040888963407, multiplier = 6364136223846793005; return () => { const oldState = state; state = oldState * multiplier + inc; const xorshifted = ((oldState >>> 18) ^ oldState) >>> 27; const rot = oldState >>> 59; return ((xorshifted >>> rot) | (xorshifted << ((-rot) & 31))) >>> 0 / 0xffffffff; }; },
+            function(seed) { let a = seed || 0xf1ea5eed, b = seed ? seed * 2 : 0xda3e39cb, c = seed ? seed * 3 : 0x2b9d0955; return () => { let e = a - (b << 27 | b >>> 5); a = b ^ (c << 17 | c >>> 15); b = c + e; c = e + a; return c >>> 0 / 0xffffffff; }; },
+            async function(seed) { const msgBuffer = new TextEncoder().encode(seed.toString()); const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer); const hashView = new DataView(hashBuffer); let seedValue = hashView.getUint32(0); return () => { seedValue = (seedValue * 1103515245 + 12345) & 0xffffffff; return seedValue / 0xffffffff; }; },
+            function(seed) { let cells = new Array(32).fill(0); cells[15] = seed & 1; let pos = 0; return () => { const newCells = new Array(32); for (let i = 0; i < 32; i++) { const left = cells[(i - 1 + 32) % 32], center = cells[i], right = cells[(i + 1) % 32]; const rule = (left << 2) | (center << 1) | right; newCells[i] = ([0, 1, 1, 1, 1, 0, 0, 0])[rule]; } cells = newCells; pos = (pos + 1) % 32; return cells[pos]; }; },
+            function(seed) { let lfsr = seed || 0xACE1; return () => { lfsr = (lfsr >>> 1) | (((lfsr ^ (lfsr >>> 2) ^ (lfsr >>> 3) ^ (lfsr >>> 5)) & 1) << 15); return lfsr / 0x10000; }; },
+            function(seed) { const lcg1 = rngMethods[0](seed), lcg2 = rngMethods[11](seed + 1); return () => { return (lcg1() + lcg2()) / 2; }; },
+            function(seed) { let x = seed || 123456789, y = seed ? seed * 2 : 362436000, z = seed ? seed * 3 : 521288629, c = 7654321; return () => { x = 69069 * x + 12345; y ^= y << 13; y ^= y >>> 17; y ^= y << 5; let t = 698769069 * z + c; c = t >>> 32; z = t; return ((x + y + z) >>> 0) / 0xffffffff; }; },
+            function(seed) { const a = 65539, m = 2**31; return () => { seed = (a * seed) % m; return seed / m; }; },
+            function(seed) { const a = 48271, m = 2147483647; return () => { seed = (a * seed) % m; return seed / m; }; },
+            function(seed) { const r = 43, m = 2**32; let state = new Array(r); state[0] = seed; for (let i = 1; i < r; i++) state[i] = (state[i-1] * 1103515245 + 12345) >>> 0; let i = r, j = r - 22, carry = 0; return () => { let x = state[i] - state[j] - carry; carry = x < 0 ? 1 : 0; state[i] = x & 0xffffffff; i = (i + 1) % r; j = (j + 1) % r; return state[i] / m; }; },
+            function(seed) { const base = 2**16 - 1; let c = seed % base, x = (seed / base) % base; return () => { const t = 2111111111 * x + c; x = t % base; c = Math.floor(t / base); return (x * base + c) / (base * base); }; },
+            function(seed) { let i, j = 0, s = []; for (i = 0; i < 256; i++) s[i] = i; for (i = 0; i < 256; i++) { j = (j + s[i] + (seed >>> (i % 4) * 8) & 0xff) % 256; [s[i], s[j]] = [s[j], s[i]]; } i = j = 0; return () => { i = (i + 1) % 256; j = (j + s[i]) % 256; [s[i], s[j]] = [s[j], s[i]]; return s[(s[i] + s[j]) % 256] / 256; }; },
+            function(seed) { let z = seed || 0; return () => { z = (z + 0x9e3779b97f4a7c15) | 0; z = (z ^ (z >> 30)) * 0xbf58476d1ce4e5b9 | 0; z = (z ^ (z >> 27)) * 0x94d049bb133111eb | 0; return (z ^ (z >> 31)) >>> 0 / 0xffffffff; }; },
+            function(seed) { let state = new Uint32Array(16); state[0] = 0x61707865; state[5] = 0x3320646e; state[10] = 0x79622d32; state[15] = 0x6b206574; for(let i=0; i<16; i++) if(i!==4 && i!==5 && i!==10 && i!==15) state[i] = seed + i; return () => { const result = state[0] ^ state[5] ^ state[10] ^ state[15]; state[8]++; return result / 0xffffffff; }; },
+            function(seed) { const luxury = 3, p = 24; let state = new Array(p); for(let i=0; i<p; i++) { seed = (1664525 * seed + 1013904223) >>> 0; state[i] = seed; } let i = p - 1; return () => { const new_val = state[i] - state[(i + p - luxury) % p]; state[i] = new_val >>> 0; i = (i + 1) % p; return new_val / 0xffffffff; }; },
+            function(seed) { let hash = seed; return () => { hash = ((hash >> 16) ^ hash) * 0x45d9f3b; hash = ((hash >> 16) ^ hash) * 0x45d9f3b; hash = (hash >> 16) ^ hash; return (hash & 0xffffffff) / 0xffffffff; }; }
+        ];
+
+        // State variables
+        let currentPeriod = "", currentNumber = 0, lastNumber = -1, countdownInterval = null, basePeriod = "", periodCounter = 0;
+        let currentPeriodForHistory = "", currentNumberForHistory = 0, drbgInstance = null, drbgReseedCounter = 0, periodSeedCounter = 0;
+        let currentRNGMethods = [], lastFiveDigits = 0;
+        const history = [];
+        
+        // DOM elements
+        const dom = {
+            inputSection: document.getElementById('inputSection'), resultSection: document.getElementById('resultSection'), historySection: document.getElementById('historySection'),
+            periodInput: document.getElementById('periodInput'), generateBtn: document.getElementById('generateBtn'), resetBtn: document.getElementById('resetBtn'),
+            currentNumberEl: document.getElementById('currentNumber'), symbolDisplay: document.getElementById('symbolDisplay'), sizeDisplay: document.getElementById('sizeDisplay'),
+            currentPeriodEl: document.getElementById('currentPeriod'), countdownTimer: document.getElementById('countdownTimer'), historyList: document.getElementById('historyList'),
+            resetOverlay: document.getElementById('resetOverlay'), confirmResetBtn: document.getElementById('confirmReset'), cancelResetBtn: document.getElementById('cancelReset'),
+            drbgIndicator: document.getElementById('drbgIndicator'), telegramText: document.getElementById('telegramText'), progressRingFill: document.getElementById('progressRingFill'),
+            periodChangeIndicator: document.getElementById('periodChangeIndicator'), reseedIndicator: document.getElementById('reseedIndicator'), supervisorIndicator: document.getElementById('supervisorIndicator'), hybridIndicator: document.getElementById('hybridIndicator')
+        };
+
+        // Initialize DRBG
+        async function initializeDRBG() {
+            try { const entropy = crypto.getRandomValues(new Uint8Array(16)); drbgInstance = new AESCTRDRBG(entropy); drbgReseedCounter = 0; periodSeedCounter = 0; console.log('AES-CTR-DRBG initialized'); return true; }
+            catch (error) { console.error('Failed to initialize DRBG:', error); return false; }
+        }
+
+        // Generate new seed for each period
+        async function generateNewSeedForPeriod() {
+            try {
+                const newEntropy = crypto.getRandomValues(new Uint8Array(16));
+                await drbgInstance.reseed(newEntropy); drbgReseedCounter++; periodSeedCounter++;
+                dom.supervisorIndicator.textContent = `Supervisor: New Seed #${periodSeedCounter} Generated`; dom.supervisorIndicator.classList.add('show');
+                dom.currentPeriodEl.classList.add('seed-animation');
+                setTimeout(() => { dom.supervisorIndicator.classList.remove('show'); dom.currentPeriodEl.classList.remove('seed-animation'); }, 3000);
+                console.log(`New seed generated for period change #${periodSeedCounter}`); return true;
+            } catch (error) { console.error('Error generating new seed:', error); return false; }
+        }
+
+        // Generate number using Hybrid RNG System
+        async function generateNumber() {
+            try {
+                const periodDigits = currentPeriod.slice(-5); lastFiveDigits = parseInt(periodDigits);
+                const drbgBytes = await drbgInstance.generate(1); const drbgValue = drbgBytes[0];
+                const combinedSeed = drbgValue ^ lastFiveDigits;
+                
+                const method1Index = Math.floor(Math.random() * rngMethods.length);
+                let method2Index = Math.floor(Math.random() * rngMethods.length);
+                while (method2Index === method1Index) { method2Index = Math.floor(Math.random() * rngMethods.length); }
+                currentRNGMethods = [method1Index + 1, method2Index + 1];
+                
+                let rng1, rng2;
+                if (method1Index === 19) { rng1 = await rngMethods[method1Index](combinedSeed); } else { rng1 = rngMethods[method1Index](combinedSeed); }
+                if (method2Index === 19) { rng2 = await rngMethods[method2Index](combinedSeed + 999); } else { rng2 = rngMethods[method2Index](combinedSeed + 999); }
+                
+                const value1 = rng1();
+                const value2 = rng2();
+                
+                // Combine the values (average)
+                const combinedValue = (value1 + value2) / 2;
+                
+                // --- PERBAIKAN: Pastikan output adalah SATU digit (0-9) ---
+                // 1. Kalikan rata-rata dengan 10 untuk mendapatkan skala 0-9.999...
+                // 2. Gunakan Math.floor() untuk membulatkan ke bawah ke integer terdekat (0-9)
+                let result = Math.floor(combinedValue * 10);
+                
+                // 3. Sebagai langkah pengaman, pastikan hasilnya selalu dalam rentang 0-9
+                result = Math.max(0, Math.min(result, 9));
+                
+                // --- DEBUG: Tampilkan proses di console (bisa dihapus nanti) ---
+                console.log(`Hybrid RNG Debug: Method1=${currentRNGMethods[0]}, Method2=${currentRNGMethods[1]}, Value1=${value1.toFixed(4)}, Value2=${value2.toFixed(4)}, Avg=${combinedValue.toFixed(4)}, FinalDigit=${result}`);
+                
+                dom.hybridIndicator.textContent = `Hybrid RNG: Methods ${currentRNGMethods[0]} & ${currentRNGMethods[1]}`; dom.hybridIndicator.classList.add('show');
+                setTimeout(() => { dom.hybridIndicator.classList.remove('show'); }, 3000);
+                
+                return result;
+            } catch (error) { console.error('Error generating number:', error); return Math.floor(Math.random() * 10); }
+        }
+
+        // Update display
+        function updateDisplay(number) {
+            currentNumber = number; dom.currentNumberEl.textContent = number;
+            dom.currentNumberEl.classList.remove('even', 'odd'); dom.currentNumberEl.classList.add(number % 2 === 0 ? 'even' : 'odd');
+            dom.currentNumberEl.classList.remove('animate-update'); void dom.currentNumberEl.offsetWidth; dom.currentNumberEl.classList.add('animate-update');
+            
+            if (number === 0) { dom.symbolDisplay.textContent = '🔴🟣'; } else if (number === 5) { dom.symbolDisplay.textContent = '🟢🟣'; } else { dom.symbolDisplay.textContent = number % 2 === 0 ? '🔴' : '🟢'; }
+            
+            if (number === 2 || number === 4 || number === 0) { dom.sizeDisplay.textContent = 'KECIL'; dom.sizeDisplay.className = 'size-badge size-kecil-merah'; }
+            else if (number === 1 || number === 3) { dom.sizeDisplay.textContent = 'KECIL'; dom.sizeDisplay.className = 'size-badge size-kecil-hijau'; }
+            else if (number === 5 || number === 7 || number === 9) { dom.sizeDisplay.textContent = 'BESAR'; dom.sizeDisplay.className = 'size-badge size-besar-hijau'; }
+            else if (number === 6 || number === 8) { dom.sizeDisplay.textContent = 'BESAR'; dom.sizeDisplay.className = 'size-badge size-besar-merah'; }
+        }
+
+        // Update countdown
+        function updateCountdown(seconds) {
+            const minutes = Math.floor(seconds / 60), secs = seconds % 60;
+            dom.countdownTimer.textContent = `${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+            const progress = (60 - seconds) / 60; const degrees = progress * 360;
+            dom.progressRingFill.style.transform = `translate(-50%, -50%) rotate(${degrees - 90}deg)`;
+            dom.countdownTimer.classList.remove('countdown-normal', 'countdown-warning', 'countdown-critical');
+            dom.progressRingFill.classList.remove('warning', 'critical');
+            if (seconds > 10) { dom.countdownTimer.classList.add('countdown-normal'); }
+            else if (seconds > 5) { dom.countdownTimer.classList.add('countdown-warning'); dom.progressRingFill.classList.add('warning'); }
+            else { dom.countdownTimer.classList.add('countdown-critical'); dom.progressRingFill.classList.add('critical'); if (seconds <= 5 && seconds > 4) createParticles(); }
+        }
+
+        // Create particle effect
+        function createParticles() {
+            const container = document.querySelector('.countdown-container'); const particleCount = 10;
+            for (let i = 0; i < particleCount; i++) {
+                const particle = document.createElement('div'); particle.classList.add('particle');
+                const angle = (Math.PI * 2 * i) / particleCount; const distance = 30 + Math.random() * 20;
+                const x = Math.cos(angle) * distance; const y = Math.sin(angle) * distance;
+                particle.style.setProperty('--x', `${x}px`); particle.style.setProperty('--y', `${y}px`);
+                particle.style.left = '50%'; particle.style.top = '50%'; particle.style.animation = 'particleAnimation 1s ease-out forwards';
+                container.appendChild(particle); setTimeout(() => particle.remove(), 1000);
+            }
+        }
+
+        // Start countdown
+        function startCountdown() {
+            let seconds = 60; updateCountdown(seconds);
+            if (countdownInterval) clearInterval(countdownInterval);
+            countdownInterval = setInterval(() => {
+                seconds--; updateCountdown(seconds);
+                if (seconds <= 0) { clearInterval(countdownInterval); addToHistory(currentPeriodForHistory, currentNumberForHistory, periodSeedCounter, currentRNGMethods); generateNext(); }
+            }, 770); // Diubah dari 1000ms ke 770ms untuk membuat timer berjalan 0.3 detik lebih cepat
+        }
+
+        // Generate next number
+        async function generateNext() {
+            periodCounter++; await generateNewSeedForPeriod();
+            const number = await generateNumber(); lastNumber = number;
+            const newPeriod = basePeriod + String(periodCounter).padStart(3, '0'); currentPeriod = newPeriod;
+            dom.currentPeriodEl.textContent = currentPeriod; dom.currentPeriodEl.classList.remove('period-animate'); void dom.currentPeriodEl.offsetWidth; dom.currentPeriodEl.classList.add('period-animate');
+            dom.periodChangeIndicator.classList.add('show'); setTimeout(() => dom.periodChangeIndicator.classList.remove('show'), 2000);
+            updateDisplay(number); currentPeriodForHistory = currentPeriod; currentNumberForHistory = number; startCountdown();
+        }
+
+        // Format periode dengan menyembunyikan 6 angka tengah
+        function formatPeriodWithMoreHiddenMiddle(period) {
+            if (!period || period.length < 10) return period; // Jika periode terlalu pendek, tampilkan semua
+            
+            const hiddenDigits = 6; // Menyembunyikan 6 angka tengah
+            const startLength = Math.ceil((period.length - hiddenDigits) / 2);
+            const endLength = Math.floor((period.length - hiddenDigits) / 2);
+            
+            const start = period.substring(0, startLength);
+            const end = period.substring(period.length - endLength);
+            
+             return start + end;
+        }
+
+        // Add to history
+        function addToHistory(period, number, seedCount, rngMethods) {
+            const entry = { period, number, seedCount, rngMethods }; history.unshift(entry);
+            if (history.length > 10) history.pop(); updateHistoryDisplay();
+        }
+
+        // Update history display
+        function updateHistoryDisplay() {
+            dom.historyList.innerHTML = '';
+            history.forEach((entry) => {
+                const item = document.createElement('div'); item.classList.add('history-item');
+                const leftSection = document.createElement('div'); leftSection.classList.add('history-left');
+                
+                // Format periode dengan menyembunyikan 6 angka tengah
+                const formattedPeriod = formatPeriodWithMoreHiddenMiddle(entry.period);
+                const periodSpan = document.createElement('span'); periodSpan.textContent = formattedPeriod;
+                
+                const separator = document.createElement('span'); separator.classList.add('history-separator');
+                const numberSpan = document.createElement('span'); numberSpan.classList.add('history-number');
+                numberSpan.classList.add(entry.number % 2 === 0 ? 'history-even-number' : 'history-odd-number'); numberSpan.textContent = entry.number;
+                leftSection.appendChild(periodSpan); leftSection.appendChild(separator); leftSection.appendChild(numberSpan);
+                
+                const rightSection = document.createElement('div'); rightSection.classList.add('history-right');
+                const symbolContainer = document.createElement('div'); symbolContainer.classList.add('symbol-container');
+                const symbolSpan = document.createElement('span');
+                if (entry.number === 0) { symbolSpan.textContent = '🔴🟣'; } else if (entry.number === 5) { symbolSpan.textContent = '🟢🟣'; } else { symbolSpan.textContent = entry.number % 2 === 0 ? '🔴' : '🟢'; }
+                symbolContainer.appendChild(symbolSpan);
+                
+                const sizeSpan = document.createElement('span');
+                if (entry.number === 2 || entry.number === 4 || entry.number === 0) { sizeSpan.textContent = 'KECIL'; sizeSpan.className = 'size-badge size-kecil-merah'; }
+                else if (entry.number === 1 || entry.number === 3) { sizeSpan.textContent = 'KECIL'; sizeSpan.className = 'size-badge size-kecil-hijau'; }
+                else if (entry.number === 5 || entry.number === 7 || entry.number === 9) { sizeSpan.textContent = 'BESAR'; sizeSpan.className = 'size-badge size-besar-hijau'; }
+                else if (entry.number === 6 || entry.number === 8) { sizeSpan.textContent = 'BESAR'; sizeSpan.className = 'size-badge size-besar-merah'; }
+                rightSection.appendChild(symbolContainer); rightSection.appendChild(sizeSpan);
+                
+                const drbgSpan = document.createElement('div'); drbgSpan.classList.add('drbg-status'); drbgSpan.textContent = `Seed: #${entry.seedCount}`;
+                const rngMethodSpan = document.createElement('div'); rngMethodSpan.classList.add('rng-method-indicator');
+                rngMethodSpan.textContent = (entry.rngMethods && entry.rngMethods.length === 2) ? `RNG: ${entry.rngMethods[0]}+${entry.rngMethods[1]}` : 'RNG: Standard';
+                
+                item.appendChild(leftSection); item.appendChild(rightSection); item.appendChild(drbgSpan); item.appendChild(rngMethodSpan);
+                dom.historyList.appendChild(item);
+            });
+        }
+
+        // Handle generate button click
+        async function handleGenerate() {
+            const input = dom.periodInput.value.trim();
+            if (!input) { alert('Silakan masukkan periode terlebih dahulu'); return; }
+            if (!drbgInstance) { const initialized = await initializeDRBG(); if (!initialized) { alert('Gagal menginisialisasi DRBG. Silakan coba lagi.'); return; } }
+            if (input.length >= 3) { basePeriod = input.substring(0, input.length - 3); periodCounter = parseInt(input.substring(input.length - 3), 10); currentPeriod = input; }
+            else { basePeriod = input; periodCounter = 1; currentPeriod = basePeriod + String(periodCounter).padStart(3, '0'); }
+            lastNumber = -1; dom.currentPeriodEl.textContent = currentPeriod;
+            const number = await generateNumber(); updateDisplay(number); lastNumber = number;
+            currentPeriodForHistory = currentPeriod; currentNumberForHistory = number;
+            dom.inputSection.classList.add('hidden'); dom.resultSection.classList.remove('hidden'); dom.historySection.classList.remove('hidden'); dom.resetBtn.classList.remove('hidden');
+            startCountdown();
+        }
+
+        // Handle reset
+        function handleReset() { dom.resetOverlay.classList.add('active'); }
+        function confirmReset() {
+            currentPeriod = ""; currentNumber = 0; lastNumber = -1; basePeriod = ""; periodCounter = 0; currentPeriodForHistory = ""; currentNumberForHistory = 0;
+            drbgReseedCounter = 0; periodSeedCounter = 0; currentRNGMethods = []; lastFiveDigits = 0; history.length = 0;
+            drbgInstance = null; if (countdownInterval) { clearInterval(countdownInterval); countdownInterval = null; }
+            dom.inputSection.classList.remove('hidden'); dom.resultSection.classList.add('hidden'); dom.historySection.classList.add('hidden'); dom.resetBtn.classList.add('hidden');
+            dom.periodInput.value = ""; dom.currentPeriodEl.textContent = "-"; dom.resetOverlay.classList.remove('active');
+        }
+        function cancelReset() { dom.resetOverlay.classList.remove('active'); }
+        function handleTelegramClick() { window.open('https://t.me/FaruqNineten', '_blank'); }
+
+        // Event listeners
+        dom.generateBtn.addEventListener('click', handleGenerate);
+        dom.resetBtn.addEventListener('click', handleReset);
+        dom.confirmResetBtn.addEventListener('click', confirmReset);
+        dom.cancelResetBtn.addEventListener('click', cancelReset);
+        dom.telegramText.addEventListener('click', handleTelegramClick);
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' && !dom.inputSection.classList.contains('hidden')) { handleGenerate(); }
+            else if (e.key === 'r' && !dom.resultSection.classList.contains('hidden')) { handleReset(); }
+        });
+
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log('55FIVE - Website siap digunakan dengan Hybrid RNG System (34 Methods)');
+        });
+    </script>
+</body>
+</html>
